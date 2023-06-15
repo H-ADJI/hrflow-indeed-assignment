@@ -7,7 +7,7 @@ from playwright.sync_api import Browser, sync_playwright
 from playwright_stealth import stealth_sync
 
 from navigation import paginate
-
+from parsing import extract_initial_info
 with sync_playwright() as p:
     browser: Browser = p.chromium.launch(headless=False)
     context = browser.new_context(
@@ -20,6 +20,7 @@ with sync_playwright() as p:
     location_input = page.locator("//input[@id='text-input-where']")
     location_input.fill("Davidstow, Cornwall")
     location_input.press(key="Enter")
-    for page_number in paginate(page=page):
-        logger.debug(page_number)
+    for page_content in paginate(page=page):
+        extract_initial_info(jobs_page=page_content)
+        
     browser.close()
