@@ -17,4 +17,5 @@ Scripts to collect data from indeed job board, the collected jobs will be indexe
 - getting the search parameter from home page
 - choosing a location
 - navigating to the job list
-- paginating until no next page 
+- paginating until no next page
+- deal with popup when navigating pages 
