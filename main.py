@@ -2,12 +2,15 @@
 # //input[@id='text-input-where'] input to click for locations
 # //ul[@class='icl-Autocomplete-list ']/li//b
 # //input DesktopSERPJobAlertPopup-email
-from loguru import logger
+import json
+from dataclasses import asdict
+
 from playwright.sync_api import Browser, sync_playwright
 from playwright_stealth import stealth_sync
 
 from navigation import paginate
 from parsing import extract_initial_info
+
 with sync_playwright() as p:
     browser: Browser = p.chromium.launch(headless=True)
     context = browser.new_context(
@@ -20,7 +23,12 @@ with sync_playwright() as p:
     location_input = page.locator("//input[@id='text-input-where']")
     location_input.fill("Davidstow, Cornwall")
     location_input.press(key="Enter")
-    for page_content in paginate(page=page):
-        extract_initial_info(jobs_page=page_content)
-        
+    data = []
+    try:
+        for page_content in paginate(page=page):
+            for job_info in extract_initial_info(jobs_page=page_content):
+                data.append(asdict(job_info))
+    finally:
+        with open("data.json", "w") as f:
+            json.dump(data, f)
     browser.close()
