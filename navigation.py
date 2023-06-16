@@ -39,6 +39,7 @@ def go_next_page(page: Page, tries: int = 2) -> bool:
 
 def paginate(page: Page):
     while True:
+        page.wait_for_timeout(2_000)
         jobs = page.locator("//div[@class='jobsearch-LeftPane']")
         jobs.wait_for(state="visible")
         yield page.content()
