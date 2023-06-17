@@ -23,8 +23,11 @@ Scripts to collect data from indeed job board, the collected jobs will be indexe
 - parse html to get the jobs urls
 
 ## Data fields
+
 ### The job feed
+
 The following fields will be extracted from indeed job feed :
+
 - in platform job id
 - title
 - url
@@ -34,11 +37,14 @@ The following fields will be extracted from indeed job feed :
 - salary (raw format)
 - job_type / employement_type
 - shift
-The following fields are available but where not considered :
-- work model : remote / in-person / hybrid
+- work model : remote / in-person / hybrid (computed from location)
 
-### The job page 
+### The job page
+
 The following fields will be extracted from a job page :
+
+- in platform job id
+- title
 - description
 - job location
 - company_name
@@ -47,8 +53,14 @@ The following fields will be extracted from a job page :
 - valid until
 - job_type / employement_type (full list)
 - salary (detailed infos)
-
-
+- job benefits
+- company description
+- company logo url
+- company name
+- company indeed profile
+- company indeed reviews
+- company average rating / same as from feed
+- company rating count
 
 ### some job links to verify the fields 
 - https://uk.indeed.com/viewjob?jk=16f799d068784637&tk=1h32l3o0kjtuo801&from=serp&vjs=3 

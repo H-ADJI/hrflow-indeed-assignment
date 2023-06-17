@@ -2,6 +2,8 @@ from loguru import logger
 from playwright.async_api import TimeoutError as NavigationTimeout
 from playwright.sync_api import Locator, Page
 
+from data_models import RawJob
+
 
 # //a[@aria-label='Next Page'] next page button
 # //button[@data-testid="pagination-page-current"] current page number
@@ -14,7 +16,7 @@ def go_next_page(page: Page, tries: int = 2) -> bool:
     next_button = page.locator("//a[@aria-label='Next Page']")
     # scrolling to "next page button"
     try:
-        next_button.scroll_into_view_if_needed(timeout=100_000)
+        next_button.scroll_into_view_if_needed(timeout=10_000)
     except NavigationTimeout:
         logger.warning("Next button no longer available")
         return False
@@ -45,3 +47,10 @@ def paginate(page: Page):
         yield page.content()
         if not go_next_page(page=page):
             break
+
+
+def visit_job_page(page: Page, job: RawJob):
+    logger.debug(f"visiting : {job.full_url}")
+    page.goto(job.full_url)
+    page.wait_for_timeout(500)
+    return page.content()

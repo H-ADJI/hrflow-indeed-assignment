@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from datetime import datetime
-from typing import Optional
+from typing import Literal, Optional
 
 
 @dataclass
@@ -20,32 +20,50 @@ class Salary:
 
 @dataclass
 class Location:
-    pass
+    text: str
+    lat: float = None
+    lng: float = None
 
 
 @dataclass
 class Section:
-    pass
+    name: str
+    title: str
+    description: str
 
 
 @dataclass
 class Skill:
-    pass
+    name: str
+    type: Literal["hard", "soft"]
+    value: str = None
 
 
 @dataclass
 class DateRange:
-    pass
+    name: str
+    value_min: datetime
+    value_max: datetime
 
 
 @dataclass
 class FloatRange:
-    pass
+    name: str
+    value_min: float
+    value_max: float
+    unit: str
 
 
 @dataclass
 class Tag:
-    pass
+    name: str
+    value: str
+
+
+@dataclass
+class Metadata:
+    name: str
+    value: str
 
 
 @dataclass
@@ -54,28 +72,41 @@ class RawJob:
     The format / model of the job when scraped from indeed.
     """
 
-    # number of hires
-    # salary
-    # job description
-
     # //script[contains(text(), 'window._initialData')] select json that contains alot of stuff
     # //script[@type="application/ld+json"] json that contains job main data
-
-    in_platform_id: str  # regex from url or others ...
+    in_platform_id: str  # //table//td[@class='resultContent']//a[@id]/@data-jk from feed
     title: str  # .//table//td[@class='resultContent']//a[@id]/span/@title from job feed
     url: str  # .//table//td[@class='resultContent']//a[@id]/@href from job feed
-    company: Optional[Company] = None
+    location_query_param: str = None
+    description: str = None
+    company_name: Optional[str] = None
+    company_rating: Optional[str] = None
+    company_rating_count: Optional[str] = None
+    company_location: Optional[str] = None
+    company_description: Optional[str] = None
+    company_logo: Optional[str] = None
+    company_indeed_profile: Optional[str] = None
+    company_review_page: Optional[str] = None
     location: Optional[str] = None
-    salary: Optional[Salary] = None
+    raw_salary: Optional[str] = None
+    salary_details: Optional[dict] = None
+    date_posted: Optional[datetime] = None
+    valid_until: Optional[datetime] = None
     job_type: Optional[
-        list
+        list[str]
     ] = None  # //div[@class='metadata']/div[svg[@aria-label='Job type']] from job feed (use getall for parsing)
+    job_benefits: Optional[list[str]] = None
     shift: Optional[
-        list
+        list[str]
     ] = None  # //div[@class='metadata']/div[svg[@aria-label='Shift']]  from feed OR //div[contains(preceding-sibling::*,'Shift')]//text() from job page
 
-    def platform_id(self):
-        return self.url
+    @property
+    def work_mode(self) -> list[str]:
+        return self.location
+
+    @property
+    def full_url(self) -> str:
+        return "https://uk.indeed.com" + self.url.encode().decode()
 
 
 @dataclass
@@ -91,7 +122,8 @@ class HrflowJobWrite:
     url: str = None
     summary: str = None
     created_at: datetime = None
+    tags: list[Tag] = None
     skills: list[Skill] = None
-    ranges_float: list[FloatRange]
-    ranges_date: list[DateRange]
-    tags: list[Tag]
+    ranges_float: list[FloatRange] = None
+    ranges_date: list[DateRange] = None
+    metadata: list[Metadata] = None
