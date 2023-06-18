@@ -6,10 +6,11 @@
 import json
 from dataclasses import asdict
 
-from navigation import paginate, visit_job_page
-from parsing import extract_details, extract_initial_info
 from playwright.sync_api import Browser, sync_playwright
 from playwright_stealth import stealth_sync
+
+from src.navigation import feed_pagination, visit_job_page
+from src.parsing import extract_details, extract_initial_info
 
 # import sys
 # logger.remove()
@@ -30,7 +31,7 @@ with sync_playwright() as p:
     location_input.press(key="Enter")
     data = []
     try:
-        for page_content in paginate(page=page):
+        for page_content in feed_pagination(page=page):
             for job_info in extract_initial_info(indeed_feed_page=page_content):
                 job_page = visit_job_page(page=details_page, job=job_info)
                 job_details, job_metadata = extract_details(job_page_content=job_page)

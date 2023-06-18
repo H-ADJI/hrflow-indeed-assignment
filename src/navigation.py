@@ -2,15 +2,17 @@ from loguru import logger
 from playwright.async_api import TimeoutError as NavigationTimeout
 from playwright.sync_api import Locator, Page
 
+from src.constants import (
+    CLOSE_POPUP_SELECTOR,
+    CURRENT_PAGE_NUMBER_SELECTOR,
+    JOBS_PANE_SELECTOR,
+    NEXT_PAGE_BUTTON_SELECTOR,
+)
 from src.data_models import RawJob
 
-# //a[@aria-label='Next Page'] next page button
-# //button[@data-testid="pagination-page-current"] current page number
-# //button[@aria-label='close'] close the popup to subscribe to newsletter
-# //div[@class='jobsearch-LeftPane'] job container
-# //div[@class='jobsearch-LeftPane']/div[@id='mosaic-jobResults']/div/ul/li job cards + garbage elements
+
 def go_next_page(page: Page, tries: int = 2) -> bool:
-    next_button = page.locator("//a[@aria-label='Next Page']")
+    next_button = page.locator(NEXT_PAGE_BUTTON_SELECTOR)
     # scrolling to "next page button"
     try:
         next_button.scroll_into_view_if_needed(timeout=10_000)
@@ -18,11 +20,9 @@ def go_next_page(page: Page, tries: int = 2) -> bool:
         logger.warning("Next button no longer available")
         return False
     # log page number
-    logger.debug(
-        page.locator("//button[@data-testid='pagination-page-current']").text_content()
-    )
+    logger.debug(page.locator(CURRENT_PAGE_NUMBER_SELECTOR).text_content())
 
-    annoying_popup: Locator = page.locator("//button[@aria-label='close']")
+    annoying_popup: Locator = page.locator(CLOSE_POPUP_SELECTOR)
     # dealing with popup that blocks naviagation
     for i in range(tries):
         if annoying_popup.count() > 0:
@@ -36,10 +36,10 @@ def go_next_page(page: Page, tries: int = 2) -> bool:
     return False
 
 
-def paginate(page: Page):
+def feed_pagination(page: Page):
     while True:
         page.wait_for_timeout(2_000)
-        jobs = page.locator("//div[@class='jobsearch-LeftPane']")
+        jobs = page.locator(JOBS_PANE_SELECTOR)
         jobs.wait_for(state="visible")
         yield page.content()
         if not go_next_page(page=page):

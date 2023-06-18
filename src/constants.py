@@ -1,3 +1,5 @@
+INDEED_BASE_URL = "https://uk.indeed.com"
+# Data selection xpaths :
 JOB_CARD_SELECTOR = "//div[@class='jobsearch-LeftPane']/div[@id='mosaic-jobResults']/div/ul/li/div[@class[contains( . , 'cardOutline')]]"
 JOB_ID_SELECTOR = ".//table//td[@class='resultContent']//a[@id]/@data-jk"
 JOB_URL_SELECTOR = ".//table//td[@class='resultContent']//a[@id]/@href"
@@ -10,3 +12,8 @@ JOB_SHIFT_SELECTOR = ".//div[@class='metadata']/div[svg[@aria-label='Shift']]/te
 JOB_TYPE_SELECTOR = ".//div[@class='metadata']/div[svg[@aria-label='Job type']]/text()"
 JOB_DETAIL_JSON_SELECTOR = "//script[@type='application/ld+json']/text()"
 JOB_METADATA_JSON_SELECTOR = "//script[contains(text(), 'window._initialData')]/text()"
+# Navigation / interactions xpaths :
+NEXT_PAGE_BUTTON_SELECTOR = "//a[@aria-label='Next Page']"
+CURRENT_PAGE_NUMBER_SELECTOR = "//button[@data-testid='pagination-page-current']"
+CLOSE_POPUP_SELECTOR = "//button[@aria-label='close']"
+JOBS_PANE_SELECTOR = "//div[@class='jobsearch-LeftPane']"

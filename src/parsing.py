@@ -47,7 +47,6 @@ def parse_data_object(raw_data: str) -> dict | None:
         return chompjs.parse_js_object(string=raw_data)
     except ValueError:
         logger.warning("This JS object could not be parsed")
-        logger.warning(raw_data)
         return None
 
 
@@ -64,7 +63,6 @@ def parse_metadata_object(raw_data: str) -> dict | None:
 
     except ValueError:
         logger.warning("this JS object could not be parsed")
-        logger.warning(raw_data)
         return None
 
 
