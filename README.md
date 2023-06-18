@@ -6,21 +6,25 @@ Made by HADJI KHALIL (aka H-ADJI)
 
 Scripts to collect data from indeed job board, the collected jobs will be indexed in hrflow internal databases using python + hrflow APIs.
 
-
 ## setup
 
 - install packages and dependencies (requirements.txt)
 - install a browser for playwright using playwright install chromium
 
 ## Scraping flow
+
 - clicking the location for suggestion
 - getting the search parameter from home page
 - choosing a location
 - navigating to the job list
 - paginating until no next page
-- deal with popup when navigating pages 
+- deal with popup when navigating pages
 - extract each page html
 - parse html to get the jobs urls
+- visit each job page
+- extract job data from json in script tag
+- merge data from feed with data from job page
+- done
 
 ## Data fields
 
@@ -61,7 +65,3 @@ The following fields will be extracted from a job page :
 - company indeed reviews
 - company average rating / same as from feed
 - company rating count
-
-### some job links to verify the fields 
-- https://uk.indeed.com/viewjob?jk=16f799d068784637&tk=1h32l3o0kjtuo801&from=serp&vjs=3 
-- https://uk.indeed.com/viewjob?jk=3db748ddcf374946&tk=1h32l3o0kjtuo801&from=serp&vjs=3

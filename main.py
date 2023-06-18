@@ -6,11 +6,10 @@
 import json
 from dataclasses import asdict
 
-from playwright.sync_api import Browser, sync_playwright
-from playwright_stealth import stealth_sync
-
 from navigation import paginate, visit_job_page
 from parsing import extract_details, extract_initial_info
+from playwright.sync_api import Browser, sync_playwright
+from playwright_stealth import stealth_sync
 
 # import sys
 # logger.remove()
@@ -27,18 +26,19 @@ with sync_playwright() as p:
     stealth_sync(page=details_page)
     page.goto("https://uk.indeed.com/")
     location_input = page.locator("//input[@id='text-input-where']")
-    location_input.fill("Davidstow, Cornwall")
+    location_input.fill("united kingdom")
     location_input.press(key="Enter")
     data = []
     try:
         for page_content in paginate(page=page):
             for job_info in extract_initial_info(indeed_feed_page=page_content):
                 job_page = visit_job_page(page=details_page, job=job_info)
+                job_details, job_metadata = extract_details(job_page_content=job_page)
+                job_info.update_data(job_details=job_details, job_metadata=job_metadata)
                 data.append(asdict(job_info))
-                extract_details(job_page_content=job_page)
     finally:
-        with open("jobdata.json", "w") as f:
-            json.dump(data, f)
+        with open("./assests/jobdata.json", "w") as f:
+            json.dump(data, f, ensure_ascii=False)
         details_page.screenshot(path="./assets/bugetails.jpg")
         page.screenshot(path="./assets/bugfeed.jpg")
     browser.close()
