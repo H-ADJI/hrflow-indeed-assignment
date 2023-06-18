@@ -38,7 +38,7 @@ with sync_playwright() as p:
                 job_info.update_data(job_details=job_details, job_metadata=job_metadata)
                 data.append(asdict(job_info))
     finally:
-        with open("./assests/jobdata.json", "w") as f:
+        with open("./assets/jobdata.json", "w") as f:
             json.dump(data, f, ensure_ascii=False)
         details_page.screenshot(path="./assets/bugetails.jpg")
         page.screenshot(path="./assets/bugfeed.jpg")
