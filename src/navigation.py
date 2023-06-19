@@ -42,7 +42,7 @@ def feed_pagination(page: Page):
     while True:
         page.wait_for_timeout(1_500)
         jobs = page.locator(JOBS_PANE_SELECTOR)
-        jobs.wait_for(state="visible")
+        jobs.wait_for(state="attached")
         yield page.content()
         if not go_next_page(page=page):
             break
@@ -53,7 +53,7 @@ def visit_job_page(
     job: RawJob,
     try_number: int = 1,
     attempts: int = 3,
-    cooldown: float = 1_000,
+    cooldown: float = 5_000,
 ) -> str | None:
     logger.debug(f"visiting : {job.full_url}")
     page.goto(job.full_url)
