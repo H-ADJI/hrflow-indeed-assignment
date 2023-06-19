@@ -49,31 +49,31 @@ class FloatRange:
 @dataclass
 class Tag:
     name: str
-    value: str
+    value: str = None
 
 
 @dataclass
 class Language:
     name: str
-    value: str
+    value: str = None
 
 
 @dataclass
 class Task:
     name: str
-    value: str
+    value: str = None
 
 
 @dataclass
 class Certification:
     name: str
-    value: str
+    value: str = None
 
 
 @dataclass
 class Course:
     name: str
-    value: str
+    value: str= None
 
 
 @dataclass
@@ -107,19 +107,33 @@ class HrflowJob:
 
     @staticmethod
     def __parse_skills(parsed_data: dict) -> list[Skill] | None:
-        pass
+        skills = []
+        for hard_skill in parsed_data.get("skills_hard", []):
+            skills.append(Skill(name=hard_skill, type="hard"))
+        for soft_skill in parsed_data.get("skills_soft", []):
+            skills.append(Skill(name=soft_skill, type="soft"))
+        return skills or None
 
     @staticmethod
     def __parse_tasks(parsed_data: dict) -> list[Task] | None:
-        pass
+        tasks = []
+        for task in parsed_data.get("tasks", []):
+            tasks.append(Task(name=task))
+        return tasks or None
 
     @staticmethod
     def __parse_languages(parsed_data: dict) -> list[Language] | None:
-        pass
+        languages = []
+        for language in parsed_data.get("languages", []):
+            languages.append(Language(name=language))
+        return languages or None
 
     @staticmethod
     def __parse_certifications(parsed_data: dict) -> list[Certification] | None:
-        pass
+        certifications = []
+        for certif in parsed_data.get("certifications", []):
+            certifications.append(Certification(name=certif))
+        return certifications or None
 
     @staticmethod
     def __parse_courses(parsed_data: dict) -> list[Course] | None:
@@ -340,6 +354,6 @@ class RawJob:
             metadata=self.__metadata_adapter(),
         )
         # include NLP/AI generated fields
-        # hrflow_job.add_hrflowAI_generated_field(job_text=self.full_description, client=client)
+        hrflow_job.add_hrflowAI_generated_field(job_text=self.full_description, client=client)
 
         return hrflow_job
