@@ -13,6 +13,7 @@ JOB_TYPE_SELECTOR = ".//div[@class='metadata']/div[svg[@aria-label='Job type']]/
 JOB_DETAIL_JSON_SELECTOR = "//script[@type='application/ld+json']"
 JOB_METADATA_JSON_SELECTOR = "//script[contains(text(), 'window._initialData')]"
 # Navigation / interactions xpaths :
+SEARCH_QUERY_WHERE_SELECTOR = "//input[@id='text-input-where']"
 NEXT_PAGE_BUTTON_SELECTOR = "//a[@aria-label='Next Page']"
 CURRENT_PAGE_NUMBER_SELECTOR = "//button[@data-testid='pagination-page-current']"
 CLOSE_POPUP_SELECTOR = "//button[@aria-label='close']"
