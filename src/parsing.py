@@ -42,6 +42,7 @@ def extract_initial_info(indeed_feed_page: str):
 
 def parse_data_object(raw_data: str) -> dict | None:
     if not raw_data:
+        logger.warning("JS data object not available")
         return None
     try:
         return chompjs.parse_js_object(string=raw_data)
@@ -52,6 +53,7 @@ def parse_data_object(raw_data: str) -> dict | None:
 
 def parse_metadata_object(raw_data: str) -> dict | None:
     if not raw_data:
+        logger.warning("JS metadata object not available")
         return None
     try:
         match = re.search(r"(?<=_initialData=).*", raw_data)
@@ -66,8 +68,8 @@ def parse_metadata_object(raw_data: str) -> dict | None:
         return None
 
 
-def extract_details(job_page_content: str) -> tuple[dict]:
-    job_data_selector = Selector(job_page_content)
+def extract_details(page_content: str) -> tuple[dict]:
+    job_data_selector = Selector(page_content)
 
     job_raw_data = job_data_selector.xpath(JOB_DETAIL_JSON_SELECTOR).get()
     job_raw_metadata = job_data_selector.xpath(JOB_METADATA_JSON_SELECTOR).get()

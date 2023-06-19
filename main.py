@@ -33,10 +33,12 @@ with sync_playwright() as p:
     try:
         for page_content in feed_pagination(page=page):
             for job_info in extract_initial_info(indeed_feed_page=page_content):
-                job_page = visit_job_page(page=details_page, job=job_info)
-                job_details, job_metadata = extract_details(job_page_content=job_page)
-                job_info.update_data(job_details=job_details, job_metadata=job_metadata)
-                data.append(asdict(job_info))
+
+                if job_page_content := visit_job_page(page=details_page, job=job_info):
+                    job_details, job_metadata = extract_details(page_content=job_page_content)
+                    job_info.update_data(job_details=job_details, job_metadata=job_metadata)
+                    job = job_info.api_format(client=None)
+                    data.append(asdict(job))
     finally:
         with open("./assets/jobdata.json", "w") as f:
             json.dump(data, f, ensure_ascii=False)

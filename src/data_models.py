@@ -4,6 +4,7 @@ from datetime import datetime
 from typing import Literal, Optional
 
 from hrflow import Hrflow
+from loguru import logger
 
 from src.constants import INDEED_BASE_URL
 from src.utils import nested_get
@@ -104,9 +105,36 @@ class HrflowJob:
     ranges_date: list[DateRange] = None
     metadata: list[Metadata] = None
 
-    def add_hrflowAI_generated_field(self, text: str, client: Hrflow):
-        # here logic of including AI/NLP generated fields
+    @staticmethod
+    def __parse_skills(parsed_data: dict) -> list[Skill] | None:
         pass
+
+    @staticmethod
+    def __parse_tasks(parsed_data: dict) -> list[Task] | None:
+        pass
+
+    @staticmethod
+    def __parse_languages(parsed_data: dict) -> list[Language] | None:
+        pass
+
+    @staticmethod
+    def __parse_certifications(parsed_data: dict) -> list[Certification] | None:
+        pass
+
+    @staticmethod
+    def __parse_courses(parsed_data: dict) -> list[Course] | None:
+        pass
+
+    def add_hrflowAI_generated_field(self, job_text: str, client: Hrflow):
+        response_data: dict = client.document.parsing.post(text=job_text)
+        if data := nested_get(dictionary=response_data, query="data.parsing"):
+            self.tasks = self.__parse_tasks(parsed_data=data)
+            self.skills = self.__parse_skills(parsed_data=data)
+            self.courses = self.__parse_courses(parsed_data=data)
+            self.languages = self.__parse_languages(parsed_data=data)
+            self.certifications = self.__parse_certifications(parsed_data=data)
+            return
+        logger.warning("Could not parse job text")
 
 
 @dataclass
@@ -137,7 +165,7 @@ class RawJob:
     shift: Optional[str] = None
 
     @property
-    def clean_description(self) -> str:
+    def clean_description(self) -> str | None:
         if self.description:
             return re.sub(
                 r"\n\s*\n",
@@ -146,28 +174,38 @@ class RawJob:
             )
 
     @property
-    def full_description(self):
-        return self.title + "\n" + self.clean_description
+    def full_description(self) -> str | None:
+        if clean_description := self.clean_description:
+            return self.title + "\n" + clean_description
 
     @property
     def work_modes(self) -> list[str]:
         work_modes = []
-        if "remote" in self.job_location.lower() or "remote" in self.company_location.lower():
-            work_modes.append("remote")
+        if job_location := self.job_location:
+            if "remote" in job_location.lower():
+                work_modes.append("remote")
 
-        if "hybrid" in self.company_location.lower():
-            work_modes.append("hybrid")
+        if company_location := self.company_location:
+            if "remote" in company_location.lower():
+                work_modes.append("remote")
+
+            if "hybrid" in company_location.lower():
+                work_modes.append("hybrid")
 
         return work_modes
 
     @property
     def location(self) -> str:
+        from_company_location = None
+        from_job_location = None
         compiled_regex = re.compile(r"((remote|hybrid)(\sin)?)")
-        compiled_regex.sub()
+
         if job_loc := self.job_location:
-            from_job_location = compiled_regex.sub("", job_loc.lower())
+            from_job_location = compiled_regex.sub("", job_loc.lower()).strip()
+
         if company_loc := self.company_location:
-            from_company_location = compiled_regex.sub("", company_loc.lower())
+            from_company_location = compiled_regex.sub("", company_loc.lower()).strip()
+
         return from_company_location or from_job_location or None
 
     @property
@@ -221,7 +259,7 @@ class RawJob:
 
     def __tags_adapter(self) -> list[Tag]:
         tags = []
-        for benefit in self.job_benefits:
+        for benefit in self.job_benefits or []:
             tags.append[Tag(name="job benefit", value=benefit)]
         for job_type in self.job_type:
             tags.append(Tag(name="job type", value=job_type))
@@ -260,7 +298,7 @@ class RawJob:
 
     def __date_ranges_adapter(self) -> list[DateRange]:
         return [
-            DateRange(name="job validity", value_max=self.date_posted, value_min=self.valid_until)
+            DateRange(name="job validity", value_min=self.date_posted, value_max=self.valid_until)
         ]
 
     def __metadata_adapter(self) -> list[Metadata]:
@@ -288,7 +326,7 @@ class RawJob:
 
         return metadatas or None
 
-    def gen_api_format(self, client: Hrflow) -> HrflowJob:
+    def api_format(self, client: Hrflow) -> HrflowJob:
         hrflow_job = HrflowJob(
             reference=self.in_platform_id,
             name=self.title,
@@ -302,6 +340,6 @@ class RawJob:
             metadata=self.__metadata_adapter(),
         )
         # include NLP/AI generated fields
-        hrflow_job.add_hrflowAI_generated_field(text=self.full_description, client=client)
+        # hrflow_job.add_hrflowAI_generated_field(job_text=self.full_description, client=client)
 
         return hrflow_job

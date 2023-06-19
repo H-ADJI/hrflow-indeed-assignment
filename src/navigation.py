@@ -5,6 +5,8 @@ from playwright.sync_api import Locator, Page
 from src.constants import (
     CLOSE_POPUP_SELECTOR,
     CURRENT_PAGE_NUMBER_SELECTOR,
+    JOB_DETAIL_JSON_SELECTOR,
+    JOB_METADATA_JSON_SELECTOR,
     JOBS_PANE_SELECTOR,
     NEXT_PAGE_BUTTON_SELECTOR,
 )
@@ -38,7 +40,7 @@ def go_next_page(page: Page, tries: int = 2) -> bool:
 
 def feed_pagination(page: Page):
     while True:
-        page.wait_for_timeout(2_000)
+        page.wait_for_timeout(1_500)
         jobs = page.locator(JOBS_PANE_SELECTOR)
         jobs.wait_for(state="visible")
         yield page.content()
@@ -46,8 +48,32 @@ def feed_pagination(page: Page):
             break
 
 
-def visit_job_page(page: Page, job: RawJob):
+def visit_job_page(
+    page: Page,
+    job: RawJob,
+    try_number: int = 1,
+    attempts: int = 3,
+    cooldown: float = 1_000,
+) -> str | None:
     logger.debug(f"visiting : {job.full_url}")
     page.goto(job.full_url)
     page.wait_for_timeout(500)
+    try:
+        page.locator(JOB_DETAIL_JSON_SELECTOR).wait_for(state="attached", timeout=2_000)
+        page.locator(JOB_METADATA_JSON_SELECTOR).wait_for(state="attached", timeout=2_000)
+
+    except NavigationTimeout:
+        if "Just a moment" in page.title():
+            logger.warning("Clouflare detection triggered")
+            if try_number <= attempts:
+                logger.warning(
+                    f"Going to retry for the {try_number+1} attempt after a short cooldown"
+                )
+                page.wait_for_timeout(cooldown * try_number)
+                return visit_job_page(page=page, job=job, try_number=try_number + 1)
+            logger.warning("Could not bypass Clouflare detection ")
+            return None
+        else:
+            logger.warning("Some issue occured when extracting data objects from job page")
+
     return page.content()

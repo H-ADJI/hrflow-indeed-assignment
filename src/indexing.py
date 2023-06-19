@@ -14,5 +14,5 @@ def index_job(client: Hrflow, raw_job: RawJob) -> None:
     ).get("data")
 
     if not job_already_indexed:
-        job: HrflowJob = raw_job.gen_api_format(client=client)
+        job: HrflowJob = raw_job.api_format(client=client)
         client.job.indexing.add_json(board_key=env_settings.BOARD_KEY, job_json=asdict(job))
