@@ -13,12 +13,16 @@ from src.constants import (
 from src.data_models import RawJob
 
 
-async def go_next_page(page: Page, tries: int = 2) -> bool:
+async def go_next_page(page: Page, tries: int = 3) -> bool:
     next_button = page.locator(NEXT_PAGE_BUTTON_SELECTOR)
     # scrolling to "next page button"
     try:
-        await next_button.scroll_into_view_if_needed(timeout=10_000)
+        await next_button.scroll_into_view_if_needed(timeout=15_000)
     except NavigationTimeout:
+        if "Just a moment" in await page.title():
+            logger.warning("Clouflare detection triggered")
+            await page.reload()
+            return await go_next_page(page=page)
         logger.warning("Next button no longer available")
         return False
     # log page number
@@ -56,22 +60,23 @@ async def visit_job_page(
     cooldown: float = 5_000,
 ) -> str | None:
     logger.debug(f"visiting : {job.full_url}")
-    await page.goto(job.full_url)
-    await page.wait_for_timeout(500)
     try:
+        await page.goto(job.full_url)
+        await page.wait_for_timeout(500)
         await page.locator(JOB_DETAIL_JSON_SELECTOR).wait_for(state="attached", timeout=2_000)
         await page.locator(JOB_METADATA_JSON_SELECTOR).wait_for(state="attached", timeout=2_000)
 
     except NavigationTimeout:
+        await page.pause()
         if "Just a moment" in await page.title():
-            logger.warning("Clouflare detection triggered")
+            logger.warning("Cloudflare detection triggered")
             if try_number <= attempts:
                 logger.warning(
                     f"Going to retry for the {try_number+1} attempt after a short cooldown"
                 )
                 await page.wait_for_timeout(cooldown * try_number)
                 return await visit_job_page(page=page, job=job, try_number=try_number + 1)
-            logger.warning("Could not bypass Clouflare detection ")
+            logger.warning("Could not bypass Cloudflare detection ")
             return None
         else:
             logger.warning("Some issue occured when extracting data objects from job page")

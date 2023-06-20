@@ -1,7 +1,9 @@
 import asyncio
+import random
 from typing import Generator
 
 from hrflow import Hrflow
+from loguru import logger
 from playwright.async_api import Browser, async_playwright
 from playwright_stealth import stealth_async
 
@@ -29,22 +31,27 @@ class AioObject(object):
         pass
 
 
-class ScrapingWorker:
-    def __init__(self, browser: Browser, proxy_info: dict = None) -> None:
+class ScrapingWorker(AioObject):
+    async def __init__(
+        self, browser: Browser, proxy_info: dict = None, _purpose: str = "scraping"
+    ) -> None:
         self.proxy = proxy_info
         self.browser = browser
         self.page = None
-
-    async def __aenter__(self):
+        self.purpose = _purpose
+        self.id = None
+        self.id = random.randint(20, 9999)
         self.context = await self.browser.new_context(
             viewport={"width": 1920, "height": 1080},
             user_agent="Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36",  # noqa
         )
         self.page = await self.context.new_page()
         await stealth_async(self.page)
-        return self
+        logger.debug(f"Launched {self.purpose} witj id : {self.id}")
 
-    async def __aexit__(self, exc_type, exc, tb):
+    async def stop(self):
+        logger.debug("Exiting the Worker")
+        logger.debug(f"worker for {self.purpose} - {self.id}")
         await self.context.close()
 
     async def feed_jobs_generator(
@@ -84,6 +91,8 @@ class JobIndexing:
         self.headless = is_headless
         self.playwright_engine = None
         self.browser = None
+        self.worker_pool: list[ScrapingWorker] = []
+        self.tasks: list[asyncio.Task] = []
 
     async def __aenter__(self):
         self.playwright_engine = await async_playwright().start()
@@ -95,31 +104,44 @@ class JobIndexing:
         return self
 
     async def __aexit__(self, exc_type, exc, tb):
+        logger.debug("cancelling the tasks")
+        for task in self.tasks:
+            if not task.cancelled():
+                task.cancel()
+        logger.debug("closing the workers contexts")
+        for worker in self.worker_pool:
+            await worker.stop()
+        logger.debug("Exiting the Indexer")
         if self.browser:
+            logger.debug("Closing browser")
             await self.browser.close()
 
         if self.playwright_engine:
+            logger.debug("Closing playwright")
+            logger.debug(self.job_queue.qsize())
             await self.playwright_engine.stop()
 
     async def job_producer(self):
-        worker: ScrapingWorker
-        async with ScrapingWorker(browser=self.browser) as worker:
-            async for job in worker.feed_jobs_generator(
-                search_query_what=self.query, search_query_where=self.location
-            ):
-                await self.job_queue.put(job)
+        worker = await ScrapingWorker(browser=self.browser, _purpose="Feed Scraping")
+        self.worker_pool.append(worker)
+
+        async for job in worker.feed_jobs_generator(
+            search_query_what=self.query, search_query_where=self.location
+        ):
+            await self.job_queue.put(job)
 
     async def job_consumer(self):
-        worker: ScrapingWorker
-        async with ScrapingWorker(browser=self.browser) as worker:
-            while True:
-                initial_job = await self.job_queue.get()
-                full_job = await worker.job_details_collector(job=initial_job)
-                if full_job:
-                    await asyncio.to_thread(
-                        index_job, client=self.hrflow_client, extracted_job=full_job
-                    )
-                self.job_queue.task_done()
+        worker = await ScrapingWorker(browser=self.browser, _purpose="Job Details Scraping")
+        self.worker_pool.append(worker)
+
+        while True:
+            initial_job = await self.job_queue.get()
+            full_job = await worker.job_details_collector(job=initial_job)
+            if full_job:
+                await asyncio.to_thread(
+                    index_job, client=self.hrflow_client, extracted_job=full_job
+                )
+            self.job_queue.task_done()
 
     async def run(self):
         producer_task = asyncio.create_task(self.job_producer())
@@ -127,7 +149,11 @@ class JobIndexing:
             asyncio.create_task(self.job_consumer()) for _ in range(self.conccurency_lvl)
         ]
 
+        self.tasks.append(producer_task)
+        self.tasks.extend(consumer_tasks)
+
         await producer_task
+        logger.info("Done Producing jobs from feed")
         await self.job_queue.join()
         for consumer in consumer_tasks:
             consumer.cancel()
