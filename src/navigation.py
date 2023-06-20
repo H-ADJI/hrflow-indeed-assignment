@@ -67,7 +67,6 @@ async def visit_job_page(
         await page.locator(JOB_METADATA_JSON_SELECTOR).wait_for(state="attached", timeout=2_000)
 
     except NavigationTimeout:
-        await page.pause()
         if "Just a moment" in await page.title():
             logger.warning("Cloudflare detection triggered")
             if try_number <= attempts:
