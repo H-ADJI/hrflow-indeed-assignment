@@ -8,16 +8,20 @@ Scripts to collect data from indeed job board, the collected jobs will be indexe
 
 ## Setup
 
-- **IMPORTANT** : python >= 3.9 to support all asyncio features 
+- **IMPORTANT** : python >= 3.9 to support all asyncio features
 
-- Install packages and dependencies (requirements.txt) using 
+- Install packages and dependencies (requirements.txt) using :
+
 ```sh
 pip install -r requirements.txt
 ```
+
 - Install a browser for playwright using playwright install chromium (or any other browser you want)
+
 ```sh
 playwright install chromium
 ```
+
 - Add a  **.env**  file in the root of the project with the following variables :
 
 ```dosini
@@ -25,11 +29,22 @@ API_KEY="YOUR_API_KEY"
 USER_EMAIL ="YOUR_EMAIL"
 BOARD_KEY="YOUR_BOARD_KEY"
 ```
+
 - Run the code :
+
 ```sh
 python main.py
 ```
 
+## Tools used
+
+- ***Playwright** : Browser automation tool made by Microsoft, offering the best performance with a modern API and asyncio support.
+- ***Playwright-stealth** : Library to patch browser environment variables to imitate a real user browser to avoid fingerprints of automated browsers.
+- ***Parsel** : HTML parsing backend used by scrapy, uses the Python-C language FFI (Foreign Functions Interfaces) for super fast parsing.
+- ***ChompJS**  : Library used to parse javascript objects into Python dictionaries, more powerful and flexible than json from std-library.
+- ***Asyncio** : Coroutine / Event loop based concurrency implementation in python, very good for IO heavy application.
+- ***Hrflow** : Hrflow SDK to communicate with parsing and indexing APIs.
+- ***Loguru** : Simple and beautiful logging.
 
 ## Scraping flow
 
