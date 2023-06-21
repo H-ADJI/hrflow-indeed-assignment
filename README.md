@@ -38,13 +38,13 @@ python main.py
 
 ## Tools used
 
-- ***Playwright** : Browser automation tool made by Microsoft, offering the best performance with a modern API and asyncio support.
-- ***Playwright-stealth** : Library to patch browser environment variables to imitate a real user browser to avoid fingerprints of automated browsers.
-- ***Parsel** : HTML parsing backend used by scrapy, uses the Python-C language FFI (Foreign Functions Interfaces) for super fast parsing.
-- ***ChompJS**  : Library used to parse javascript objects into Python dictionaries, more powerful and flexible than json from std-library.
-- ***Asyncio** : Coroutine / Event loop based concurrency implementation in python, very good for IO heavy application.
-- ***Hrflow** : Hrflow SDK to communicate with parsing and indexing APIs.
-- ***Loguru** : Simple and beautiful logging.
+- **Playwright** : Browser automation tool made by Microsoft, offering the best performance with a modern API and asyncio support.
+- **Playwright-stealth** : Library to patch browser environment variables to imitate a real user browser to avoid fingerprints of automated browsers.
+- **Parsel** : HTML parsing backend used by scrapy, uses the Python-C language FFI (Foreign Functions Interfaces) for super fast parsing.
+- **ChompJS**  : Library used to parse javascript objects into Python dictionaries, more powerful and flexible than json from std-library.
+- **Asyncio** : Coroutine / Event loop based concurrency implementation in python, very good for IO heavy application.
+- **Hrflow** : Hrflow SDK to communicate with parsing and indexing APIs.
+- **Loguru** : Simple and beautiful logging.
 
 ## Scraping flow
 
