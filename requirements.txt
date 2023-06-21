@@ -1,3 +1,4 @@
+aiostream==0.4.5
 certifi==2023.5.7
 charset-normalizer==3.1.0
 chompjs==1.2.2
@@ -13,6 +14,7 @@ parsel==1.8.1
 playwright==1.35.0
 playwright-stealth==1.0.5
 pyee==9.0.4
+python-dotenv==1.0.0
 python-magic==0.4.27
 requests==2.31.0
 typing_extensions==4.6.3

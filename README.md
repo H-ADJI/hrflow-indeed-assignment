@@ -6,11 +6,30 @@ Made by HADJI KHALIL (aka H-ADJI)
 
 Scripts to collect data from indeed job board, the collected jobs will be indexed in hrflow internal databases using python + hrflow APIs.
 
-## setup
+## Setup
 
-- **IMPORTANT** : python >= 3.9 to support all asyncio features
-- install packages and dependencies (requirements.txt)
-- install a browser for playwright using playwright install chromium
+- **IMPORTANT** : python >= 3.9 to support all asyncio features 
+
+- Install packages and dependencies (requirements.txt) using 
+```sh
+pip install -r requirements.txt
+```
+- Install a browser for playwright using playwright install chromium (or any other browser you want)
+```sh
+playwright install chromium
+```
+- Add a  **.env**  file in the root of the project with the following variables :
+
+```dosini
+API_KEY="YOUR_API_KEY"
+USER_EMAIL ="YOUR_EMAIL"
+BOARD_KEY="YOUR_BOARD_KEY"
+```
+- Run the code :
+```sh
+python main.py
+```
+
 
 ## Scraping flow
 
