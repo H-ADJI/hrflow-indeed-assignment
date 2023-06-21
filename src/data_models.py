@@ -73,7 +73,7 @@ class Certification:
 @dataclass
 class Course:
     name: str
-    value: str= None
+    value: str = None
 
 
 @dataclass
@@ -91,7 +91,7 @@ class HrflowJob:
     reference: str
     name: str
     location: Location
-    sections: list[Section]
+    sections: list[Section] = None
     url: str = None
     summary: str = None
     created_at: datetime = None
@@ -140,14 +140,15 @@ class HrflowJob:
         pass
 
     def add_hrflowAI_generated_field(self, job_text: str, client: Hrflow):
-        response_data: dict = client.document.parsing.post(text=job_text)
-        if data := nested_get(dictionary=response_data, query="data.parsing"):
-            self.tasks = self.__parse_tasks(parsed_data=data)
-            self.skills = self.__parse_skills(parsed_data=data)
-            self.courses = self.__parse_courses(parsed_data=data)
-            self.languages = self.__parse_languages(parsed_data=data)
-            self.certifications = self.__parse_certifications(parsed_data=data)
-            return
+        if job_text:
+            response_data: dict = client.document.parsing.post(text=job_text)
+            if data := nested_get(dictionary=response_data, query="data.parsing"):
+                self.tasks = self.__parse_tasks(parsed_data=data)
+                self.skills = self.__parse_skills(parsed_data=data)
+                self.courses = self.__parse_courses(parsed_data=data)
+                self.languages = self.__parse_languages(parsed_data=data)
+                self.certifications = self.__parse_certifications(parsed_data=data)
+                return
         logger.warning("Could not parse job text")
 
 
@@ -286,11 +287,10 @@ class RawJob:
         return tags or None
 
     def __section_adapter(self) -> list[Section]:
-        return [
-            Section(
-                name="description", title="job description text", description=self.clean_description
-            )
-        ]
+        if description := self.clean_description:
+            return [
+                Section(name="description", title="job description text", description=description)
+            ]
 
     def __float_ranges_adapter(self) -> list[FloatRange]:
         ranges = []

@@ -8,6 +8,7 @@ Scripts to collect data from indeed job board, the collected jobs will be indexe
 
 ## setup
 
+- **IMPORTANT** : python >= 3.9 to support all asyncio features
 - install packages and dependencies (requirements.txt)
 - install a browser for playwright using playwright install chromium
 
