@@ -7,7 +7,7 @@ from loguru import logger
 from playwright.async_api import Browser, async_playwright
 from playwright_stealth import stealth_async
 
-from src.constants import SEARCH_QUERY_WHERE_SELECTOR
+from src.constants import UK_CITIES
 from src.data_models import RawJob
 from src.indexing import index_job
 from src.navigation import feed_pagination, visit_job_page
@@ -55,17 +55,18 @@ class ScrapingWorker(AioObject):
         await self.context.close()
 
     async def feed_jobs_generator(
-        self, search_query_what: str, search_query_where: str
+        self,
+        search_query_what: str,
     ) -> Generator[RawJob, None, None]:
         # using normal navigation to have a liget referer
-        await self.page.goto("https://uk.indeed.com/", referer="https://google.com")
-        location_input = self.page.locator(SEARCH_QUERY_WHERE_SELECTOR)
-        await location_input.fill(search_query_where)
-        await location_input.press(key="Enter")
-
-        async for page_content in feed_pagination(page=self.page):
-            for job in extract_initial_info(indeed_feed_page=page_content):
-                yield job
+        for city in UK_CITIES[::-1]:
+            await self.page.goto(
+                f"https://uk.indeed.com/jobs?q=&l={city}", referer="https://google.com"
+            )
+            logger.info(f" City ===> {city}")
+            async for page_content in feed_pagination(page=self.page):
+                for job in extract_initial_info(indeed_feed_page=page_content):
+                    yield job
 
     async def job_details_collector(self, job: RawJob) -> RawJob | None:
         if job_page_content := await visit_job_page(page=self.page, job=job):
@@ -78,14 +79,12 @@ class ScrapingWorker(AioObject):
 class JobIndexing:
     def __init__(
         self,
-        search_location: str,
         search_query: str = None,
         conccurent_scraper_count: int = 1,
         is_headless: bool = False,
         data_buffer_size: int = -1,
     ):
         self.query = search_query
-        self.location = search_location
         self.conccurency_lvl = conccurent_scraper_count
         self.job_queue: asyncio.Queue = asyncio.Queue(maxsize=data_buffer_size)
         self.headless = is_headless
@@ -125,9 +124,7 @@ class JobIndexing:
         worker = await ScrapingWorker(browser=self.browser, _purpose="Feed Scraping")
         self.worker_pool.append(worker)
 
-        async for job in worker.feed_jobs_generator(
-            search_query_what=self.query, search_query_where=self.location
-        ):
+        async for job in worker.feed_jobs_generator(search_query_what=self.query):
             await self.job_queue.put(job)
 
     async def job_consumer(self):

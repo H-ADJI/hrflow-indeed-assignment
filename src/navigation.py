@@ -26,7 +26,9 @@ async def go_next_page(page: Page, tries: int = 3) -> bool:
         logger.warning("Next button no longer available")
         return False
     # log page number
-    logger.debug(await page.locator(CURRENT_PAGE_NUMBER_SELECTOR).text_content())
+    logger.debug(
+        f" Going to Page number : {await page.locator(CURRENT_PAGE_NUMBER_SELECTOR).text_content()}"
+    )
 
     annoying_popup: Locator = page.locator(CLOSE_POPUP_SELECTOR)
     # dealing with popup that blocks naviagation
