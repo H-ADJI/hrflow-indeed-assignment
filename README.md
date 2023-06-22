@@ -6,6 +6,10 @@ Made by HADJI KHALIL (aka H-ADJI)
 
 Scripts to collect data from indeed job board, the collected jobs will be indexed in hrflow internal databases using python + hrflow APIs.
 
+## High level architecture
+
+![architecture image](/assets/indeed_crawler.png "architecture")
+
 ## Setup
 
 - **IMPORTANT** : python >= 3.9 to support all asyncio features
