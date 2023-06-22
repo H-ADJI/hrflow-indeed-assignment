@@ -9,6 +9,7 @@ from src.constants import (
     JOB_METADATA_JSON_SELECTOR,
     JOBS_PANE_SELECTOR,
     NEXT_PAGE_BUTTON_SELECTOR,
+    UK_CITIES,
 )
 from src.data_models import RawJob
 
@@ -45,13 +46,17 @@ async def go_next_page(page: Page, tries: int = 3) -> bool:
 
 
 async def feed_pagination(page: Page):
-    while True:
-        await page.wait_for_timeout(1_500)
-        jobs = page.locator(JOBS_PANE_SELECTOR)
-        await jobs.wait_for(state="attached")
-        yield await page.content()
-        if not await go_next_page(page=page):
-            break
+    # using normal navigation to have a liget referer
+    for city in UK_CITIES:
+        await page.goto(f"https://uk.indeed.com/jobs?q=&l={city}", referer="https://google.com")
+        logger.info(f" City ===> {city}")
+        while True:
+            await page.wait_for_timeout(1_500)
+            jobs = page.locator(JOBS_PANE_SELECTOR)
+            await jobs.wait_for(state="attached")
+            yield await page.content()
+            if not await go_next_page(page=page):
+                break
 
 
 async def visit_job_page(

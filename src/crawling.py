@@ -7,7 +7,6 @@ from loguru import logger
 from playwright.async_api import Browser, async_playwright
 from playwright_stealth import stealth_async
 
-from src.constants import UK_CITIES
 from src.data_models import RawJob
 from src.indexing import index_job
 from src.navigation import feed_pagination, visit_job_page
@@ -58,12 +57,7 @@ class ScrapingWorker(AioObject):
         self,
         search_query_what: str,
     ) -> Generator[RawJob, None, None]:
-        # using normal navigation to have a liget referer
-        for city in UK_CITIES[::-1]:
-            await self.page.goto(
-                f"https://uk.indeed.com/jobs?q=&l={city}", referer="https://google.com"
-            )
-            logger.info(f" City ===> {city}")
+
             async for page_content in feed_pagination(page=self.page):
                 for job in extract_initial_info(indeed_feed_page=page_content):
                     yield job
