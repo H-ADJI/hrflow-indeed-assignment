@@ -17,7 +17,3 @@ def index_job(client: Hrflow, extracted_job: RawJob) -> None:
         job: HrflowJob = extracted_job.api_format(client=client)
         client.job.indexing.add_json(board_key=env_settings.BOARD_KEY, job_json=asdict(job))
         return
-
-    logger.info(
-        f"job {extracted_job.in_platform_id} already indexed, url : {extracted_job.full_url}"
-    )
