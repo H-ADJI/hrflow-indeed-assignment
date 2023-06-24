@@ -12,6 +12,14 @@ Scripts to collect data from indeed job board, the collected jobs will be indexe
 
 ## Setup
 
+- Add a  **.env**  file in the root of the project with the following variables.
+
+```dosini
+API_KEY="YOUR_API_KEY"
+USER_EMAIL ="YOUR_EMAIL"
+BOARD_KEY="YOUR_BOARD_KEY"
+```
+
 ### --> Using your local python environment
 
 - **IMPORTANT** : python >= 3.9 to support all asyncio features
@@ -26,14 +34,6 @@ pip install -r requirements.txt
 
 ```sh
 playwright install chromium
-```
-
-- Add a  **.env**  file in the root of the project with the following variables.
-
-```dosini
-API_KEY="YOUR_API_KEY"
-USER_EMAIL ="YOUR_EMAIL"
-BOARD_KEY="YOUR_BOARD_KEY"
 ```
 
 - Run the code.
