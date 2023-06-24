@@ -12,6 +12,8 @@ Scripts to collect data from indeed job board, the collected jobs will be indexe
 
 ## Setup
 
+### --> Using your local python environment
+
 - **IMPORTANT** : python >= 3.9 to support all asyncio features
 
 - Install packages and dependencies (requirements.txt) using :
@@ -26,7 +28,7 @@ pip install -r requirements.txt
 playwright install chromium
 ```
 
-- Add a  **.env**  file in the root of the project with the following variables :
+- Add a  **.env**  file in the root of the project with the following variables.
 
 ```dosini
 API_KEY="YOUR_API_KEY"
@@ -34,11 +36,22 @@ USER_EMAIL ="YOUR_EMAIL"
 BOARD_KEY="YOUR_BOARD_KEY"
 ```
 
-- Run the code :
+- Run the code.
 
 ```sh
 python main.py
 ```
+
+### --> Using docker runtime environment
+
+- **IMPORTANT** : docker runtime with the new CLI >= 1.13.
+- For Unix based systems (where Makefile is supported) execute the following command.
+
+```sh
+make run
+```
+
+- For windows based systems (you should rethink your career as a programmer) use the docker desktop GUI to build the image and run the container.
 
 ## Tools used
 
