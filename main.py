@@ -6,8 +6,8 @@ from src.crawling import JobIndexing
 async def main():
     async with JobIndexing(
         is_headless=True,
-        conccurent_scraper_count=5,
-        data_buffer_size=25,
+        conccurent_scraper_count=2,
+        data_buffer_size=20,
     ) as j_indexer:
         await j_indexer.run()
 
