@@ -63,6 +63,11 @@ make
 - **Hrflow** : Hrflow SDK to communicate with parsing and indexing APIs.
 - **Loguru** : Simple and beautiful logging.
 
+## Deployement
+
+The program what bundled using docker, and the resulting artifact was deployed on a docker optimized VM on GCP.
+![deployement](/assets/gcp_vm.png "gcp")
+
 ## Scraping flow
 
 - clicking the location for suggestion
