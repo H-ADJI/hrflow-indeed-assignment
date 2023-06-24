@@ -1,12 +1,12 @@
 import random
 
 from loguru import logger
-from playwright.async_api import Locator, Page
+from playwright.async_api import Page
 from playwright.async_api import TimeoutError as NavigationTimeout
 
 from src.constants import (
-    CLOSE_POPUP_SELECTOR,
     CURRENT_PAGE_NUMBER_SELECTOR,
+    INDEED_FEED_URL,
     JOB_DETAIL_JSON_SELECTOR,
     JOB_METADATA_JSON_SELECTOR,
     JOBS_PANE_SELECTOR,
@@ -16,52 +16,40 @@ from src.constants import (
 from src.data_models import RawJob
 
 
-async def go_next_page(page: Page, tries: int = 3) -> bool:
+async def go_next_page(page: Page, city: str, page_number: int) -> bool:
     next_button = page.locator(NEXT_PAGE_BUTTON_SELECTOR)
-    # scrolling to "next page button"
     try:
-        await next_button.scroll_into_view_if_needed(timeout=15_000)
+        await next_button.wait_for(state="attached")
     except NavigationTimeout:
-        if "Just a moment" in await page.title():
-            logger.warning("Clouflare detection triggered")
-            await page.reload()
-            return await go_next_page(page=page)
         logger.warning("Next button no longer available")
         return False
-    # log page number
-    logger.debug(
-        f" Going to Page number : {await page.locator(CURRENT_PAGE_NUMBER_SELECTOR).text_content()}"
+
+    await page.goto(
+        INDEED_FEED_URL.format(city=city, page_number=page_number), referer="https://google.com"
     )
-
-    annoying_popup: Locator = page.locator(CLOSE_POPUP_SELECTOR)
-    # dealing with popup that blocks naviagation
-    for i in range(tries):
-        if await annoying_popup.count() > 0:
-            await annoying_popup.click()
-        try:
-            await next_button.click(timeout=5_000)
-            return True
-        except NavigationTimeout:
-            logger.info(f"try number {i+1} failed out of {tries}")
-
-    return False
+    return True
 
 
 async def feed_pagination(page: Page):
-    # using normal navigation to have a liget referer
+    # using normal navigation to have a legit referer
     while True:
         cities = UK_CITIES.copy()
         for _ in range(len(UK_CITIES)):
             city = random.sample(cities, 1)[0]
             await page.goto(f"https://uk.indeed.com/jobs?q=&l={city}", referer="https://google.com")
             logger.info(f" City ===> {city}")
+            page_number = 10
             while True:
+                logger.info(
+                    f" Going to Page number : {await page.locator(CURRENT_PAGE_NUMBER_SELECTOR).text_content()}"
+                )
                 await page.wait_for_timeout(1_500)
                 jobs = page.locator(JOBS_PANE_SELECTOR)
                 await jobs.wait_for(state="attached")
                 yield await page.content()
-                if not await go_next_page(page=page):
+                if not await go_next_page(page=page, city=city, page_number=page_number):
                     break
+                page_number += 10
             cities.remove(city)
 
 
@@ -72,7 +60,6 @@ async def visit_job_page(
     attempts: int = 3,
     cooldown: float = 5_000,
 ) -> str | None:
-    logger.debug(f"visiting : {job.full_url}")
     try:
         await page.goto(job.full_url)
         await page.wait_for_timeout(500)

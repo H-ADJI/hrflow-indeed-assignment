@@ -1,4 +1,5 @@
 INDEED_BASE_URL = "https://uk.indeed.com"
+INDEED_FEED_URL = "https://uk.indeed.com/jobs?q=&l={city}&start={page_number}"
 # Data selection xpaths :
 JOB_CARD_SELECTOR = "//div[@class='jobsearch-LeftPane']/div[@id='mosaic-jobResults']/div/ul/li/div[@class[contains( . , 'cardOutline')]]"
 JOB_ID_SELECTOR = ".//table//td[@class='resultContent']//a[@id]/@data-jk"
