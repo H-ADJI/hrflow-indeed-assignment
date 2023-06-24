@@ -48,7 +48,7 @@ python main.py
 - For Unix based systems (where Makefile is supported) execute the following command.
 
 ```sh
-make run
+make
 ```
 
 - For windows based systems (you should rethink your career as a programmer) use the docker desktop GUI to build the image and run the container.
