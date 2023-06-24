@@ -46,7 +46,7 @@ class ScrapingWorker(AioObject):
         )
         self.page = await self.context.new_page()
         await stealth_async(self.page)
-        logger.debug(f"Launched {self.purpose} witj id : {self.id}")
+        logger.debug(f"Launched {self.purpose} with id : {self.id}")
 
     async def stop(self):
         logger.debug("Exiting the Worker")
