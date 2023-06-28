@@ -8,6 +8,12 @@ from src.utils import env_settings
 
 
 def index_job(client: Hrflow, extracted_job: RawJob) -> None:
+    """Index job data into Hrflow database
+
+    Args:
+        client (Hrflow): Hrflow client SDK
+        extracted_job (RawJob): raw job data extracted from indeed
+    """
     job_already_indexed = client.job.indexing.get(
         board_key=env_settings.BOARD_KEY, reference=extracted_job.in_platform_id
     ).get("data")

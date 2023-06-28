@@ -140,6 +140,12 @@ class HrflowJob:
         pass
 
     def add_hrflowAI_generated_field(self, job_text: str, client: Hrflow):
+        """Parse job text to extract new data fields
+
+        Args:
+            job_text (str): job description + title
+            client (Hrflow): hrflow sdk client
+        """
         if job_text:
             response_data: dict = client.document.parsing.post(text=job_text)
             if data := nested_get(dictionary=response_data, query="data.parsing"):
@@ -341,6 +347,15 @@ class RawJob:
         return metadatas or None
 
     def api_format(self, client: Hrflow) -> HrflowJob:
+        """Format the job object to be consumed by Hrflow API
+
+        Args:
+            client (Hrflow): sdk client to request hrflow APIs
+
+        Returns:
+            HrflowJob: data format accepted by the api
+        """
+        # creating initial fields with data extracted and parsed from indeed
         hrflow_job = HrflowJob(
             reference=self.in_platform_id,
             name=self.title,
@@ -353,7 +368,7 @@ class RawJob:
             ranges_date=self.__date_ranges_adapter(),
             metadata=self.__metadata_adapter(),
         )
-        # include NLP/AI generated fields
+        # include NLP/AI generated fields using hrflow document parsing API
         hrflow_job.add_hrflowAI_generated_field(job_text=self.full_description, client=client)
 
         return hrflow_job

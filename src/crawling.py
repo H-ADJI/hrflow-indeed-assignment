@@ -31,6 +31,12 @@ class AioObject(object):
 
 
 class ScrapingWorker(AioObject):
+    """Worker class is a wrapper around browser contexts, it allows to open an isolated web page to navigate and scrape data.
+
+    Args:
+        AioObject (parent class): used to be able to initialize with a coroutine.
+    """
+
     async def __init__(
         self, browser: Browser, proxy_info: dict = None, _purpose: str = "scraping"
     ) -> None:
@@ -49,6 +55,7 @@ class ScrapingWorker(AioObject):
         logger.debug(f"Launched {self.purpose} with id : {self.id}")
 
     async def stop(self):
+        """stops and cleans up the worker data"""
         logger.debug("Exiting the Worker")
         logger.debug(f"worker for {self.purpose} - {self.id}")
         await self.context.close()
@@ -57,12 +64,27 @@ class ScrapingWorker(AioObject):
         self,
         search_query_what: str,
     ) -> Generator[RawJob, None, None]:
+        """
+        go over pages of indeed feed and retreives the available jobs
+        Args:
+            search_query_what (str): job search query
 
-            async for page_content in feed_pagination(page=self.page):
-                for job in extract_initial_info(indeed_feed_page=page_content):
-                    yield job
+        Yields:
+            Generator[RawJob, None, None]: generates jobs from indeed job feed
+        """
+        async for page_content in feed_pagination(page=self.page):
+            for job in extract_initial_info(indeed_feed_page=page_content):
+                yield job
 
     async def job_details_collector(self, job: RawJob) -> RawJob | None:
+        """
+        extract details of a job extracted from the job feed
+        Args:
+            job (RawJob): _description_
+
+        Returns:
+            RawJob | None: _description_
+        """
         if job_page_content := await visit_job_page(page=self.page, job=job):
             job_details, job_metadata = extract_details(page_content=job_page_content)
             job.update_data(job_details=job_details, job_metadata=job_metadata)
@@ -71,6 +93,10 @@ class ScrapingWorker(AioObject):
 
 
 class JobIndexing:
+    """
+    Main interface used to collect and index data using a producer-consumer like pattern
+    """
+
     def __init__(
         self,
         search_query: str = None,
@@ -88,6 +114,10 @@ class JobIndexing:
         self.tasks: list[asyncio.Task] = []
 
     async def __aenter__(self):
+        """context manager entry point
+
+        Creates the necessary ressources for scraping and indexing
+        """
         self.playwright_engine = await async_playwright().start()
         self.browser = await self.playwright_engine.chromium.launch(headless=self.headless)
         self.hrflow_client = Hrflow(
@@ -97,6 +127,10 @@ class JobIndexing:
         return self
 
     async def __aexit__(self, exc_type, exc, tb):
+        """context manager exit point
+
+        Destroy and clean up used ressources
+        """
         logger.debug("cancelling the tasks")
         for task in self.tasks:
             if not task.cancelled():
@@ -115,6 +149,7 @@ class JobIndexing:
             await self.playwright_engine.stop()
 
     async def job_producer(self):
+        """produces initial jobs data and put it into a queue"""
         worker = await ScrapingWorker(browser=self.browser, _purpose="Feed Scraping")
         self.worker_pool.append(worker)
 
@@ -122,6 +157,7 @@ class JobIndexing:
             await self.job_queue.put(job)
 
     async def job_consumer(self):
+        """consumes jobs from queue to extract their details"""
         worker = await ScrapingWorker(browser=self.browser, _purpose="Job Details Scraping")
         self.worker_pool.append(worker)
 
@@ -135,6 +171,7 @@ class JobIndexing:
             self.job_queue.task_done()
 
     async def run(self):
+        """Entry point to execute workers conccurently"""
         producer_task = asyncio.create_task(self.job_producer())
         consumer_tasks = [
             asyncio.create_task(self.job_consumer()) for _ in range(self.conccurency_lvl)

@@ -22,6 +22,14 @@ from src.data_models import RawJob
 
 
 def extract_initial_info(indeed_feed_page: str):
+    """extract all job data fields from indeed feed
+
+    Args:
+        indeed_feed_page (str): feed html content
+
+    Yields:
+        RawJob: RawJob data class with initial data
+    """
     jobs_selector = Selector(indeed_feed_page)
     jobs_selector.remove_namespaces()
     jobs: SelectorList = jobs_selector.xpath(JOB_CARD_SELECTOR)
@@ -41,6 +49,14 @@ def extract_initial_info(indeed_feed_page: str):
 
 
 def parse_data_object(raw_data: str) -> dict | None:
+    """Parse JS objects
+
+    Args:
+        raw_data (str): Javascript code
+
+    Returns:
+        dict | None: Data parsed from JS code
+    """
     if not raw_data:
         logger.warning("JS data object not available")
         return None
@@ -52,6 +68,14 @@ def parse_data_object(raw_data: str) -> dict | None:
 
 
 def parse_metadata_object(raw_data: str) -> dict | None:
+    """Parse JS objects
+
+    Args:
+        raw_data (str): Javascript code
+
+    Returns:
+        dict | None: Data parsed from JS code
+    """
     if not raw_data:
         logger.warning("JS metadata object not available")
         return None
@@ -69,6 +93,14 @@ def parse_metadata_object(raw_data: str) -> dict | None:
 
 
 def extract_details(page_content: str) -> tuple[dict]:
+    """Selects and parses JS code containing data from job page html content
+
+    Args:
+        page_content (str): job html content
+
+    Returns:
+        tuple[dict]: data and metadata dictionaries
+    """
     job_data_selector = Selector(page_content)
 
     job_raw_data = job_data_selector.xpath(JOB_DETAIL_JSON_SELECTOR).get()

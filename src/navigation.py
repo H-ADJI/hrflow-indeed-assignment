@@ -17,6 +17,16 @@ from src.data_models import RawJob
 
 
 async def go_next_page(page: Page, city: str, page_number: int) -> bool:
+    """Visit an indeed page based on page number and city
+
+    Args:
+        page (Page): playwrightt page
+        city (str): city name
+        page_number (int): page number
+
+    Returns:
+        bool: either the next page exists or not
+    """
     next_button = page.locator(NEXT_PAGE_BUTTON_SELECTOR)
     try:
         await next_button.wait_for(state="attached")
@@ -31,7 +41,14 @@ async def go_next_page(page: Page, city: str, page_number: int) -> bool:
 
 
 async def feed_pagination(page: Page):
-    # using normal navigation to have a legit referer
+    """navigating the indeed feed
+
+    Args:
+        page (Page): playwright page
+
+    Yields:
+        str: page html content
+    """
     while True:
         cities = UK_CITIES.copy()
         for _ in range(len(UK_CITIES)):
@@ -60,6 +77,18 @@ async def visit_job_page(
     attempts: int = 3,
     cooldown: float = 5_000,
 ) -> str | None:
+    """Visit and extract job page content
+
+    Args:
+        page (Page): playwright page
+        job (RawJob): raw job data class
+        try_number (int, optional): retry number incase of error loading page. Defaults to 1.
+        attempts (int, optional): max number of attempts. Defaults to 3.
+        cooldown (float, optional): cooldown duration for an exponential backoff like retry mechanism. Defaults to 5_000.
+
+    Returns:
+        str | None: job page html content
+    """
     try:
         await page.goto(job.full_url)
         await page.wait_for_timeout(500)
